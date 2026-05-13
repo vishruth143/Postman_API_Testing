@@ -247,7 +247,7 @@ newman run "Contacts\Contacts.postman_collection.json" `
 
 ### Via Executor Script (Windows — One-Click)
 
-A ready-made Windows batch script mirrors the pattern used in the companion Selenium framework.  
+A ready-made Windows batch script.  
 It runs Newman, validates the report was generated, and **automatically opens** the HTML report in your default browser.
 
 #### Run the executor
@@ -265,9 +265,11 @@ executor\contacts_tests_executor.bat
 | 1 | Sets the working directory to the project root |
 | 2 | Runs Newman with `cli` + `htmlextra` reporters |
 | 3 | Validates the `reports\` folder and report file exist |
-| 4 | Opens `reports\contacts_test_report.html` automatically in the default browser |
+| 4 | Starts a Python HTTP server on port 8000 |
+| 5 | Opens `http://localhost:8000/reports/contacts_test_report.html` automatically in the default browser |
 
-> **Note:** If any tests fail, Newman exits with a non-zero code and a warning is printed, but the report is still generated and opened so you can inspect the failures.
+> **Note:** If any tests fail, Newman exits with a non-zero code and a warning is printed, but the report is still generated and served so you can inspect the failures.
+> Press **Ctrl+C** in the terminal to stop the HTTP server when you are done viewing the report.
 
 ---
 
