@@ -1,0 +1,814 @@
+{
+  "info": {
+    "_postman_id": "9b7a0b74-6b0e-481b-afdd-1e8201783b3f",
+    "name": "Contacts",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "3171951",
+    "_collection_link": "https://go.postman.co/collection/3171951-9b7a0b74-6b0e-481b-afdd-1e8201783b3f?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Basic Endpoint Tests",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsondata = pm.response.json();\r",
+                  "pm.environment.set(\"token\", jsondata.token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"kjackvony3@fake.com\",\r\n    \"password\" : \"foobarfoo\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/users/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            },
+            "description": "# Login\n\nAuthenticates a user with their credentials and returns an authentication token or session that can be used for subsequent authorized requests.\n\n---\n\n## Endpoint\n\n**Method:** `POST`\n**URL:** `{{base_url}}/users/login`\n\n> **Note:** The `base_url` variable must be set in your active Postman environment before sending this request.\n\n---\n\n## Request Body\n\nThe request body must be sent as **JSON** (`application/json`).\n\n| Field      | Type   | Required | Description                        |\n|------------|--------|----------|------------------------------------|\n| `email`    | string | ✅ Yes   | The registered email of the user.  |\n| `password` | string | ✅ Yes   | The user's account password.       |\n\n### Example Request Body\n\n```json\n{\n  \"email\": \"kjackvony3@fake.com\",\n  \"password\": \"foobarfoo\"\n}\n```\n\n---\n\n## Responses\n\n### ✅ 200 OK — Success\n\nThe user was authenticated successfully. The response includes an authentication token.\n\n```json\n{\n  \"token\": \"<auth_token>\"\n}\n```\n\nUse the returned token in the `Authorization` header (e.g., `Bearer <token>`) for subsequent requests that require authentication.\n\n### ❌ 401 Unauthorized\n\nThe provided credentials are invalid or the user does not exist.\n\n```json\n{\n  \"error\": \"Invalid email or password.\"\n}\n```\n\n### ❌ 400 Bad Request\n\nThe request body is malformed or missing required fields.\n\n```json\n{\n  \"error\": \"Email and password are required.\"\n}\n```\n\n---\n\n## Notes\n\n- Ensure the `base_url` environment variable is configured in your active environment (e.g., `https://api.example.com`).\n- The token returned on a successful login should be stored (e.g., in an environment variable like `auth_token`) and used for authenticated endpoints.\n- Passwords are case-sensitive."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsondata = pm.response.json();\r",
+                  "pm.environment.set(\"contact_id\", jsondata[0]._id);\r",
+                  "\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Content-Type is application/json\", function () {\r",
+                  "    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Get Contact List\n\nRetrieves a list of all contacts associated with the authenticated user's account. The response is an **array of contact objects**, each containing full contact details including personal information, address, and metadata.\n\n---\n\n### Endpoint\n\n| Method | URL |\n|--------|-----|\n| `GET` | `{{base_url}}/contacts` |\n\n---\n\n### Variables\n\n| Variable | Description |\n|----------|-------------|\n| `base_url` | The base URL of the API server (e.g., `https://thinking-tester-contact-list.herokuapp.com`). Defined in the active environment. |\n\n---\n\n### Response\n\nReturns an **array** of contact objects with HTTP status `200 OK`.\n\n#### Response Fields\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `_id` | `string` | Unique identifier for the contact (MongoDB ObjectId). |\n| `firstName` | `string` | The contact's first name. |\n| `lastName` | `string` | The contact's last name. |\n| `birthdate` | `string` | The contact's date of birth in `YYYY-MM-DD` format. |\n| `email` | `string` | The contact's email address. |\n| `phone` | `string` | The contact's phone number (digits only). |\n| `street1` | `string` | Primary street address line. |\n| `street2` | `string` | Secondary street address line (e.g., apartment or suite number). |\n| `city` | `string` | City of the contact's address. |\n| `stateProvince` | `string` | State or province code (e.g., `KS` for Kansas). |\n| `postalCode` | `string` | Postal or ZIP code. |\n| `country` | `string` | Country code or name (e.g., `USA`). |\n| `owner` | `string` | The ID of the user who owns this contact record. |\n| `__v` | `number` | Internal version key used by MongoDB/Mongoose for document versioning. |\n\n#### Sample Response\n\n```json\n[\n  {\n    \"_id\": \"692509089e96760015c18658\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"birthdate\": \"1970-01-01\",\n    \"email\": \"jdoe@fake.com\",\n    \"phone\": \"8005555555\",\n    \"street1\": \"1 Main St.\",\n    \"street2\": \"Apartment A\",\n    \"city\": \"Anytown\",\n    \"stateProvince\": \"KS\",\n    \"postalCode\": \"12345\",\n    \"country\": \"USA\",\n    \"owner\": \"69235588dc21ea00152d8eea\",\n    \"__v\": 0\n  }\n]\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsondata = pm.response.json();\r",
+                  "pm.environment.set(\"contact_id\", jsondata._id);\r",
+                  "\r",
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"birthdate\": \"{{birthdate}}\",\r\n    \"email\": \"{{email}}\",\r\n    \"phone\": \"{{phone}}\",\r\n    \"street1\": \"{{street1}}\",\r\n    \"street2\": \"{{street2}}\",\r\n    \"city\": \"{{city}}\",\r\n    \"stateProvince\": \"{{stateProvince}}\",\r\n    \"postalCode\": \"{{postalCode}}\",\r\n    \"country\": \"{{country}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Add Contact\n\nCreates a new contact record in the system.\n\n**Method:** `POST`\n**URL:** `{{base_url}}/contacts`\n\n> `{{base_url}}` is an environment variable that should be set in your active Postman environment (e.g., `https://thinking-tester-contact-list.herokuapp.com`).\n\n---\n\n### Request Body\n\nThe request body must be sent as **raw JSON** (`application/json`) with the following fields:\n\n| Field | Type | Description |\n|---|---|---|\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | Date of birth in `YYYY-MM-DD` format |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number (digits only) |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary address line (e.g., apartment, suite) |\n| `city` | String | City of residence |\n| `stateProvince` | String | State or province abbreviation |\n| `postalCode` | String | ZIP or postal code |\n| `country` | String | Country code or name (e.g., `USA`) |\n\n---\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"birthdate\": \"1970-01-01\",\n  \"email\": \"jdoe@fake.com\",\n  \"phone\": \"8005555555\",\n  \"street1\": \"1 Main St.\",\n  \"street2\": \"Apartment A\",\n  \"city\": \"Anytown\",\n  \"stateProvince\": \"KS\",\n  \"postalCode\": \"12345\",\n  \"country\": \"USA\"\n}\n```\n\n---\n\n### Notes\n- Ensure the `{{base_url}}` environment variable is configured in your active environment before sending this request.\n- A successful response will return the newly created contact object along with a system-generated contact ID, which can be stored in the `contact_id` environment variable for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "pm.test(\"Correct contact is returned\", function () {\r",
+                  "    pm.expect(pm.response.text()).to.include(\"jdoe@fake.com\");\r",
+                  "});\r",
+                  "\r",
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Correct first name is returned\", function () {    \r",
+                  "    console.log(jsonData.firstName);\r",
+                  "    console.log(pm.environment.get(\"firstName\"));\r",
+                  "    pm.expect(jsonData.firstName).to.eql(pm.environment.get(\"firstName\"));\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Correct last name is returned\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    console.log(jsonData.lastName);\r",
+                  "    console.log(pm.environment.get(\"lastName\"));\r",
+                  "    pm.expect(jsonData.lastName).to.eql(pm.environment.get(\"lastName\"));\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Get Contact\n\nRetrieves the details of a single contact identified by their unique ID.\n\n---\n\n## Endpoint\n\n**Method:** `GET`\n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to retrieve |\n\n---\n\n## Request Body\n\nNone — this is a GET request and does not require a request body.\n\n---\n\n## Response\n\nOn success, returns a `200 OK` with the contact object in JSON format.\n\n| Field | Type | Description |\n|---|---|---|\n| `_id` | String | The unique identifier of the contact |\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | The contact's date of birth (YYYY-MM-DD) |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary street address (optional) |\n| `city` | String | City |\n| `stateProvince` | String | State or province |\n| `postalCode` | String | Postal or ZIP code |\n| `country` | String | Country |\n| `owner` | String | The user ID of the contact's owner |\n\n---\n\n## Error Responses\n\n| Status Code | Description |\n|---|---|\n| `401 Unauthorized` | Missing or invalid authentication token |\n| `404 Not Found` | No contact exists with the specified `contact_id` |"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Amy\",\r\n    \"lastName\": \"Miller\",\r\n    \"birthdate\": \"1992-02-02\",\r\n    \"email\": \"amiller@fake.com\",\r\n    \"phone\": \"8005554242\",\r\n    \"street1\": \"13 School St.\",\r\n    \"street2\": \"Apt. 5\",\r\n    \"city\": \"Washington\",\r\n    \"stateProvince\": \"QC\",\r\n    \"postalCode\": \"A1A1A1\",\r\n    \"country\": \"Canada\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Update Contact\n\nFully updates an existing contact identified by their unique ID. All fields in the contact record are replaced with the values provided in the request body.\n\n---\n\n## Endpoint\n\n**Method:** `PUT`  \n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to be updated. |\n\n---\n\n## Request Body\n\nThe request body must be sent as **JSON** (`application/json`). All fields are required — this is a full replacement of the contact record.\n\n| Field | Type | Required | Description |\n|---|---|---|---|\n| `firstName` | string | Yes | The contact's first name. |\n| `lastName` | string | Yes | The contact's last name. |\n| `birthdate` | string | Yes | The contact's date of birth in `YYYY-MM-DD` format. |\n| `email` | string | Yes | The contact's email address. |\n| `phone` | string | Yes | The contact's phone number. |\n| `street1` | string | Yes | Primary street address line. |\n| `street2` | string | No | Secondary street address line (e.g., apartment or suite number). |\n| `city` | string | Yes | The city of the contact's address. |\n| `stateProvince` | string | Yes | The state or province of the contact's address. |\n| `postalCode` | string | Yes | The postal or ZIP code of the contact's address. |\n| `country` | string | Yes | The country of the contact's address. |\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"Amy\",\n  \"lastName\": \"Miller\",\n  \"birthdate\": \"1992-02-02\",\n  \"email\": \"amiller@fake.com\",\n  \"phone\": \"8005554242\",\n  \"street1\": \"13 School St.\",\n  \"street2\": \"Apt. 5\",\n  \"city\": \"Washington\",\n  \"stateProvince\": \"QC\",\n  \"postalCode\": \"A1A1A1\",\n  \"country\": \"Canada\"\n}\n```\n\n---\n\n## Expected Response\n\nOn success, the API returns a `200 OK` status with the updated contact object."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Anna\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Update Contact\n\nPartially updates an existing contact identified by their unique ID. Only the fields provided in the request body will be updated — all other fields remain unchanged.\n\n---\n\n## Endpoint\n\n**Method:** `PATCH`\n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to be updated. |\n\n---\n\n## Request Body\n\nThe request body must be sent as **JSON** (`application/json`). Include only the fields you wish to update.\n\n| Field | Type | Required | Description |\n|---|---|---|---|\n| `firstName` | string | No | The first name of the contact. |\n\n**Example:**\n```json\n{\n  \"firstName\": \"Anna\"\n}\n```\n\n---\n\n## Responses\n\n| Status Code | Description |\n|---|---|\n| `200 OK` | The contact was successfully updated. Returns the updated contact object. |\n| `400 Bad Request` | The request body is malformed or contains invalid data. |\n| `401 Unauthorized` | Authentication credentials are missing or invalid. |\n| `404 Not Found` | No contact with the specified `contact_id` exists. |"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Delete Contact\n\nDeletes an existing contact identified by their unique ID. Once deleted, the contact record is permanently removed and cannot be recovered.\n\n---\n\n## Endpoint\n\n**Method:** `DELETE`\n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to be deleted. |\n\n---\n\n## Request Body\n\nThis request does not require a request body.\n\n---\n\n## Responses\n\n| Status Code | Description |\n|---|---|\n| `200 OK` / `204 No Content` | The contact was successfully deleted. |\n| `401 Unauthorized` | The request is missing valid authentication credentials. |\n| `404 Not Found` | No contact exists with the specified `contact_id`. |\n\n---\n\n## Notes\n\n- This is a **destructive operation** — deleted contacts cannot be restored.\n- Ensure the correct `contact_id` is set in the environment before sending to avoid accidental deletions."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Negative Tests",
+      "item": [
+        {
+          "name": "Setup - Add Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsondata = pm.response.json();\r",
+                  "pm.environment.set(\"contact_id\", jsondata._id);\r",
+                  "\r",
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"birthdate\": \"{{birthdate}}\",\r\n    \"email\": \"{{email}}\",\r\n    \"phone\": \"{{phone}}\",\r\n    \"street1\": \"{{street1}}\",\r\n    \"street2\": \"{{street2}}\",\r\n    \"city\": \"{{city}}\",\r\n    \"stateProvince\": \"{{stateProvince}}\",\r\n    \"postalCode\": \"{{postalCode}}\",\r\n    \"country\": \"{{country}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Add Contact\n\nCreates a new contact record in the system.\n\n**Method:** `POST`\n**URL:** `{{base_url}}/contacts`\n\n> `{{base_url}}` is an environment variable that should be set in your active Postman environment (e.g., `https://thinking-tester-contact-list.herokuapp.com`).\n\n---\n\n### Request Body\n\nThe request body must be sent as **raw JSON** (`application/json`) with the following fields:\n\n| Field | Type | Description |\n|---|---|---|\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | Date of birth in `YYYY-MM-DD` format |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number (digits only) |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary address line (e.g., apartment, suite) |\n| `city` | String | City of residence |\n| `stateProvince` | String | State or province abbreviation |\n| `postalCode` | String | ZIP or postal code |\n| `country` | String | Country code or name (e.g., `USA`) |\n\n---\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"birthdate\": \"1970-01-01\",\n  \"email\": \"jdoe@fake.com\",\n  \"phone\": \"8005555555\",\n  \"street1\": \"1 Main St.\",\n  \"street2\": \"Apartment A\",\n  \"city\": \"Anytown\",\n  \"stateProvince\": \"KS\",\n  \"postalCode\": \"12345\",\n  \"country\": \"USA\"\n}\n```\n\n---\n\n### Notes\n- Ensure the `{{base_url}}` environment variable is configured in your active environment before sending this request.\n- A successful response will return the newly created contact object along with a system-generated contact ID, which can be stored in the `contact_id` environment variable for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact List - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "# Get Contact List Unauthorized\n\nThis is a **negative test** that verifies the contacts list endpoint correctly rejects requests that are missing or have invalid authentication credentials.\n\n---\n\n## Endpoint\n\n**Method:** `GET`  \n**URL:** `{{base_url}}/contacts`\n\n> **Note:** The `base_url` variable must be set in your active Postman environment before sending this request.\n\n---\n\n## Purpose\n\nThis request intentionally omits or provides invalid authentication to confirm that the API enforces access control on the contacts list endpoint. It is part of the **Negative Tests** suite and is used to validate that unauthorized users cannot retrieve contact data.\n\n---\n\n## Authentication\n\nNo valid authentication token is provided in this request. This is intentional — the goal is to trigger an authorization failure.\n\n---\n\n## Expected Response\n\n| Field        | Value                  |\n|--------------|------------------------|\n| Status Code  | `401 Unauthorized`     |\n| Description  | The server rejects the request due to missing or invalid credentials. |\n\n---\n\n## Notes\n\n- This test helps ensure the API does not expose contact data to unauthenticated clients.\n- Pair this with the authorized [Get Contact List]({{base_url}}/contacts) request to compare behavior."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "123"
+              ]
+            },
+            "description": "# Get Contact - Not Found\n\nThis is a **negative test** that verifies the contacts endpoint correctly returns a `404 Not Found` response when a contact with the specified ID does not exist.\n\n---\n\n## Endpoint\n\n**Method:** `GET`  \n**URL:** `{{base_url}}/contacts/123`\n\n> **Note:** The `base_url` variable must be set in your active Postman environment before sending this request.\n\n---\n\n## Purpose\n\nThis request uses a hardcoded contact ID (`123`) that is expected to be absent from the system. It confirms that the API handles missing resources gracefully by returning the appropriate HTTP error status rather than an unexpected success or server error.\n\n---\n\n## Expected Behavior\n\n| Field        | Expected Value                        |\n|--------------|---------------------------------------|\n| Status Code  | `404 Not Found`                       |\n| Response Body | Error message indicating the contact was not found |\n\n---\n\n## Notes\n\n- No request body is required for this request.\n- No authentication headers are needed to observe the 404 behavior (the resource simply does not exist).\n- This test is part of the **Negative Tests** suite and is intended to validate error-handling logic on the contacts endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact - Missing Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "pm.test(\"Body matches string\", function () {\r",
+                  "    pm.expect(pm.response.text()).to.include(\"`lastName` is required\");\r",
+                  "});\r",
+                  "pm.test(\"Body matches string\", function () {\r",
+                  "    pm.expect(pm.response.text()).to.include(\"`firstName` is required\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"jdoe@fake.com\",\r\n    \"phone\": \"8005555555\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"USA\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Add Contact\n\nCreates a new contact record in the system.\n\n**Method:** `POST`\n**URL:** `{{base_url}}/contacts`\n\n> `{{base_url}}` is an environment variable that should be set in your active Postman environment (e.g., `https://thinking-tester-contact-list.herokuapp.com`).\n\n---\n\n### Request Body\n\nThe request body must be sent as **raw JSON** (`application/json`) with the following fields:\n\n| Field | Type | Description |\n|---|---|---|\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | Date of birth in `YYYY-MM-DD` format |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number (digits only) |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary address line (e.g., apartment, suite) |\n| `city` | String | City of residence |\n| `stateProvince` | String | State or province abbreviation |\n| `postalCode` | String | ZIP or postal code |\n| `country` | String | Country code or name (e.g., `USA`) |\n\n---\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"birthdate\": \"1970-01-01\",\n  \"email\": \"jdoe@fake.com\",\n  \"phone\": \"8005555555\",\n  \"street1\": \"1 Main St.\",\n  \"street2\": \"Apartment A\",\n  \"city\": \"Anytown\",\n  \"stateProvince\": \"KS\",\n  \"postalCode\": \"12345\",\n  \"country\": \"USA\"\n}\n```\n\n---\n\n### Notes\n- Ensure the `{{base_url}}` environment variable is configured in your active environment before sending this request.\n- A successful response will return the newly created contact object along with a system-generated contact ID, which can be stored in the `contact_id` environment variable for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact - Last Name Too Long",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Abcdefghijklmnopqrstuvwxyz\",\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"jdoe@fake.com\",\r\n    \"phone\": \"8005555555\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"USA\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Add Contact\n\nCreates a new contact record in the system.\n\n**Method:** `POST`\n**URL:** `{{base_url}}/contacts`\n\n> `{{base_url}}` is an environment variable that should be set in your active Postman environment (e.g., `https://thinking-tester-contact-list.herokuapp.com`).\n\n---\n\n### Request Body\n\nThe request body must be sent as **raw JSON** (`application/json`) with the following fields:\n\n| Field | Type | Description |\n|---|---|---|\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | Date of birth in `YYYY-MM-DD` format |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number (digits only) |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary address line (e.g., apartment, suite) |\n| `city` | String | City of residence |\n| `stateProvince` | String | State or province abbreviation |\n| `postalCode` | String | ZIP or postal code |\n| `country` | String | Country code or name (e.g., `USA`) |\n\n---\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"birthdate\": \"1970-01-01\",\n  \"email\": \"jdoe@fake.com\",\n  \"phone\": \"8005555555\",\n  \"street1\": \"1 Main St.\",\n  \"street2\": \"Apartment A\",\n  \"city\": \"Anytown\",\n  \"stateProvince\": \"KS\",\n  \"postalCode\": \"12345\",\n  \"country\": \"USA\"\n}\n```\n\n---\n\n### Notes\n- Ensure the `{{base_url}}` environment variable is configured in your active environment before sending this request.\n- A successful response will return the newly created contact object along with a system-generated contact ID, which can be stored in the `contact_id` environment variable for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact - Invalid Birthday",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "pm.test(\"Invalid birthdate error message is returned\", function () {\r",
+                  "    pm.expect(pm.response.text()).to.include(\"Birthdate is invalid\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Lusko\",\r\n    \"birthdate\": \"01-01-1970\",\r\n    \"email\": \"jdoe@fake.com\",\r\n    \"phone\": \"8005555555\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"USA\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "## Add Contact\n\nCreates a new contact record in the system.\n\n**Method:** `POST`\n**URL:** `{{base_url}}/contacts`\n\n> `{{base_url}}` is an environment variable that should be set in your active Postman environment (e.g., `https://thinking-tester-contact-list.herokuapp.com`).\n\n---\n\n### Request Body\n\nThe request body must be sent as **raw JSON** (`application/json`) with the following fields:\n\n| Field | Type | Description |\n|---|---|---|\n| `firstName` | String | The contact's first name |\n| `lastName` | String | The contact's last name |\n| `birthdate` | String | Date of birth in `YYYY-MM-DD` format |\n| `email` | String | The contact's email address |\n| `phone` | String | The contact's phone number (digits only) |\n| `street1` | String | Primary street address |\n| `street2` | String | Secondary address line (e.g., apartment, suite) |\n| `city` | String | City of residence |\n| `stateProvince` | String | State or province abbreviation |\n| `postalCode` | String | ZIP or postal code |\n| `country` | String | Country code or name (e.g., `USA`) |\n\n---\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"birthdate\": \"1970-01-01\",\n  \"email\": \"jdoe@fake.com\",\n  \"phone\": \"8005555555\",\n  \"street1\": \"1 Main St.\",\n  \"street2\": \"Apartment A\",\n  \"city\": \"Anytown\",\n  \"stateProvince\": \"KS\",\n  \"postalCode\": \"12345\",\n  \"country\": \"USA\"\n}\n```\n\n---\n\n### Notes\n- Ensure the `{{base_url}}` environment variable is configured in your active environment before sending this request.\n- A successful response will return the newly created contact object along with a system-generated contact ID, which can be stored in the `contact_id` environment variable for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Contact - Invalid Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "pm.test(\"Invalid email error message is returned\", function () {\r",
+                  "    pm.expect(pm.response.text()).to.include(\"Email is invalid\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Amy\",\r\n    \"lastName\": \"Miller\",\r\n    \"birthdate\": \"1992-02-02\",\r\n    \"email\": \"amiller@fake\",\r\n    \"phone\": \"8005554242\",\r\n    \"street1\": \"13 School St.\",\r\n    \"street2\": \"Apt. 5\",\r\n    \"city\": \"Washington\",\r\n    \"stateProvince\": \"QC\",\r\n    \"postalCode\": \"A1A1A1\",\r\n    \"country\": \"Canada\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Update Contact\n\nFully updates an existing contact identified by their unique ID. All fields in the contact record are replaced with the values provided in the request body.\n\n---\n\n## Endpoint\n\n**Method:** `PUT`  \n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to be updated. |\n\n---\n\n## Request Body\n\nThe request body must be sent as **JSON** (`application/json`). All fields are required — this is a full replacement of the contact record.\n\n| Field | Type | Required | Description |\n|---|---|---|---|\n| `firstName` | string | Yes | The contact's first name. |\n| `lastName` | string | Yes | The contact's last name. |\n| `birthdate` | string | Yes | The contact's date of birth in `YYYY-MM-DD` format. |\n| `email` | string | Yes | The contact's email address. |\n| `phone` | string | Yes | The contact's phone number. |\n| `street1` | string | Yes | Primary street address line. |\n| `street2` | string | No | Secondary street address line (e.g., apartment or suite number). |\n| `city` | string | Yes | The city of the contact's address. |\n| `stateProvince` | string | Yes | The state or province of the contact's address. |\n| `postalCode` | string | Yes | The postal or ZIP code of the contact's address. |\n| `country` | string | Yes | The country of the contact's address. |\n\n### Example Request Body\n\n```json\n{\n  \"firstName\": \"Amy\",\n  \"lastName\": \"Miller\",\n  \"birthdate\": \"1992-02-02\",\n  \"email\": \"amiller@fake.com\",\n  \"phone\": \"8005554242\",\n  \"street1\": \"13 School St.\",\n  \"street2\": \"Apt. 5\",\n  \"city\": \"Washington\",\n  \"stateProvince\": \"QC\",\n  \"postalCode\": \"A1A1A1\",\n  \"country\": \"Canada\"\n}\n```\n\n---\n\n## Expected Response\n\nOn success, the API returns a `200 OK` status with the updated contact object."
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Delete Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "# Delete Contact\n\nDeletes an existing contact identified by their unique ID. Once deleted, the contact record is permanently removed and cannot be recovered.\n\n---\n\n## Endpoint\n\n**Method:** `DELETE`\n**URL:** `{{base_url}}/contacts/{{contact_id}}`\n\n> **Note:** Both `base_url` and `contact_id` variables must be set in your active Postman environment before sending this request.\n\n---\n\n## Path Variables\n\n| Variable | Description |\n|---|---|\n| `contact_id` | The unique identifier of the contact to be deleted. |\n\n---\n\n## Request Body\n\nThis request does not require a request body.\n\n---\n\n## Responses\n\n| Status Code | Description |\n|---|---|\n| `200 OK` / `204 No Content` | The contact was successfully deleted. |\n| `401 Unauthorized` | The request is missing valid authentication credentials. |\n| `404 Not Found` | No contact exists with the specified `contact_id`. |\n\n---\n\n## Notes\n\n- This is a **destructive operation** — deleted contacts cannot be restored.\n- Ensure the correct `contact_id` is set in the environment before sending to avoid accidental deletions."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.test(\"Response time is less than 3000ms\", function () {\r",
+          "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+          "});"
+        ]
+      }
+    }
+  ]
+}
