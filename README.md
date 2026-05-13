@@ -74,7 +74,7 @@ Covers Login · Get · Add · Update (PUT & PATCH) · Delete · Negative & Edge-
 ```text
 Postman_API_Testing/
 ├── Contacts.postman_collection.json       # Main test collection (15 requests, 2 folders)
-├── Contact List.postman_environment.json  # Environment variable definitions (14 variables)
+├── Contacts.postman_environment.json      # Environment variable definitions (14 variables)
 └── README.md                              # This document
 ```
 
@@ -82,7 +82,9 @@ Postman_API_Testing/
 
 ## 🌱 Environment Variables
 
-All variables are defined in `Contact List.postman_environment.json`. Populate the required ones before running the collection.
+All variables are defined in `Contacts.postman_environment.json`. Populate the required ones before running the collection.
+
+> **📌 Note:** Before exporting the environment, ensure all variables are marked as **Shared** in Postman. To do this, open the environment editor, select the variables you want to share, and toggle the **Shared** column to `on` for each variable. This ensures that variable *names* (but not secret *values*) are included when the environment file is exported and shared with teammates.
 
 | Variable | Type | Set By | Description |
 |---|---|---|---|
@@ -177,8 +179,8 @@ This enforces a performance SLA of **< 3 seconds** across all 15 requests withou
 ### Via Postman UI
 
 1. Open Postman → **Import** → select `Contacts.postman_collection.json`.
-2. **Import** → select `Contact List.postman_environment.json`.
-3. Set `Contact List` as the **active environment**.
+2. **Import** → select `Contacts.postman_environment.json`.
+3. Set `Contacts` as the **active environment**.
 4. Populate `base_url` and the contact field variables (`firstName`, `lastName`, etc.).
 5. Open the **Collection Runner** → select the `Contacts` collection → click **Run Contacts**.
 
@@ -202,10 +204,10 @@ newman --version
 #### Step 3 — Run the collection
 
 ```powershell
-newman run "Contacts.postman_collection.json" `
-  --environment "Contact List.postman_environment.json" `
-  --reporters cli,htmlextra `
-  --reporter-htmlextra-export ./reports/contacts_test_report.html
+newman run "Contacts\Contacts.postman_collection.json" `
+  --environment "Contacts\Contacts.postman_environment.json" `
+  --reporters "cli,htmlextra" `
+  --reporter-htmlextra-export "./reports/contacts_test_report.html"
 ```
 
 #### Step 4 — View the report
@@ -215,8 +217,8 @@ Open `reports/contacts_test_report.html` in any browser.
 #### Run with environment variable overrides (optional)
 
 ```powershell
-newman run "Contacts.postman_collection.json" `
-  --environment "Contact List.postman_environment.json" `
+newman run "Contacts\Contacts.postman_collection.json" `
+  --environment "Contacts\Contacts.postman_environment.json" `
   --env-var "base_url=https://thinking-tester-contact-list.herokuapp.com" `
   --env-var "firstName=John" `
   --env-var "lastName=Doe" `
@@ -229,8 +231,8 @@ newman run "Contacts.postman_collection.json" `
   --env-var "stateProvince=KS" `
   --env-var "postalCode=12345" `
   --env-var "country=USA" `
-  --reporters cli,htmlextra `
-  --reporter-htmlextra-export ./reports/contacts_test_report.html
+  --reporters "cli,htmlextra" `
+  --reporter-htmlextra-export "./reports/contacts_test_report.html"
 ```
 
 > **Tip:** Use `--bail` to stop on first failure, or `--iteration-count <n>` to run the collection multiple times.
