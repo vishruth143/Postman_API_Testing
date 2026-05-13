@@ -34,6 +34,7 @@ Covers Login · Get · Add · Update (PUT & PATCH) · Delete · Negative & Edge-
 8. [Running the Collection](#%EF%B8%8F-running-the-collection)
    - [Via Postman UI](#via-postman-ui)
    - [Via Newman (CLI / CI)](#via-newman-cli--ci)
+   - [Via Executor Script (Windows — One-Click)](#via-executor-script-windows--one-click)
 9. [Test Coverage Summary](#-test-coverage-summary)
 
 ---
@@ -73,16 +74,21 @@ Covers Login · Get · Add · Update (PUT & PATCH) · Delete · Negative & Edge-
 
 ```text
 Postman_API_Testing/
-├── Contacts.postman_collection.json       # Main test collection (15 requests, 2 folders)
-├── Contacts.postman_environment.json      # Environment variable definitions (14 variables)
-└── README.md                              # This document
+├── Contacts/
+│   ├── Contacts.postman_collection.json       # Main test collection (15 requests, 2 folders)
+│   └── Contacts.postman_environment.json      # Environment variable definitions (14 variables)
+├── executor/
+│   └── contacts_tests_executor.bat            # One-click executor: runs Newman + opens HTML report
+├── reports/
+│   └── contacts_test_report.html              # Auto-generated HTML report (after first run)
+└── README.md                                  # This document
 ```
 
 ---
 
 ## 🌱 Environment Variables
 
-All variables are defined in `Contacts.postman_environment.json`. Populate the required ones before running the collection.
+All variables are defined in `Contacts/Contacts.postman_environment.json`. Populate the required ones before running the collection.
 
 > **📌 Note:** Before exporting the environment, ensure all variables are marked as **Shared** in Postman. To do this, open the environment editor, select the variables you want to share, and toggle the **Shared** column to `on` for each variable. This ensures that variable *names* (but not secret *values*) are included when the environment file is exported and shared with teammates.
 
@@ -178,10 +184,10 @@ This enforces a performance SLA of **< 3 seconds** across all 15 requests withou
 
 ### Via Postman UI
 
-1. Open Postman → **Import** → select `Contacts.postman_collection.json`.
-2. **Import** → select `Contacts.postman_environment.json`.
+1. Open Postman → **Import** → select `Contacts/Contacts.postman_collection.json`.
+2. **Import** → select `Contacts/Contacts.postman_environment.json`.
 3. Set `Contacts` as the **active environment**.
-4. Populate `base_url` and the contact field variables (`firstName`, `lastName`, etc.).
+4. Re-enable `firstName` and `city` variables and populate `base_url` and the remaining contact field variables (`firstName`, `lastName`, etc.).
 5. Open the **Collection Runner** → select the `Contacts` collection → click **Run Contacts**.
 
 ---
@@ -236,6 +242,32 @@ newman run "Contacts\Contacts.postman_collection.json" `
 ```
 
 > **Tip:** Use `--bail` to stop on first failure, or `--iteration-count <n>` to run the collection multiple times.
+
+---
+
+### Via Executor Script (Windows — One-Click)
+
+A ready-made Windows batch script mirrors the pattern used in the companion Selenium framework.  
+It runs Newman, validates the report was generated, and **automatically opens** the HTML report in your default browser.
+
+#### Run the executor
+
+```bat
+executor\contacts_tests_executor.bat
+```
+
+> Run this from the `C:\Postman_API_Testing` root directory, or double-click the file in Windows Explorer.
+
+#### What the executor does
+
+| Step | Action |
+|------|--------|
+| 1 | Sets the working directory to the project root |
+| 2 | Runs Newman with `cli` + `htmlextra` reporters |
+| 3 | Validates the `reports\` folder and report file exist |
+| 4 | Opens `reports\contacts_test_report.html` automatically in the default browser |
+
+> **Note:** If any tests fail, Newman exits with a non-zero code and a warning is printed, but the report is still generated and opened so you can inspect the failures.
 
 ---
 
