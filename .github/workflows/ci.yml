@@ -1,0 +1,53 @@
+name: Contacts API Tests
+
+on:
+  push:
+    paths:
+      - '.github/**'
+      - 'Collections/**'
+      - 'executor/**'
+    branches:
+      - '**'
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+  schedule:
+    - cron: '30 3 * * *'  # Runs at 09:00 AM IST every day
+
+jobs:
+  run-newman-tests:
+    name: Run Newman API Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Newman and htmlextra Reporter
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Create Output Directory
+        run: mkdir -p output/html_report
+
+      - name: Run Contacts Collection
+        run: |
+          newman run Collections/Contacts/Contacts.postman_collection.json \
+            --environment Collections/Contacts/Contacts.postman_environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export output/html_report/contacts_report.html
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contacts-html-report
+          path: output/html_report/contacts_report.html
